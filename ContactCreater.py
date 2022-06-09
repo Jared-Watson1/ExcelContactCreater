@@ -120,6 +120,8 @@ class xlToContact:
         df.to_excel(file)     
         filePath = os.path.abspath(file)
         print("Output file location: "  + filePath)
+        return filePath
+
 
     def sortByCounty(self, file="ContactsByRegion.xlsx"):
         for region in self.regions:
@@ -153,6 +155,7 @@ def tester(file="test.xlsx"):
 
 
 def main():
+    # run main function to use program in terminal window
     running = True
     convertedToExcel = False
     print("Intructions: \nEnter full path to bizzabo .xlsx file. \nIf unsure of path right click on file, select get info, and the \"where\" section gives the full file path.")
@@ -178,9 +181,78 @@ def main():
         except:
             print("Invalid file name. ")
 
-main()
+# main()
 # tester()
 
 
+
+
+from tkinter import *
+from tkinter.ttk import *
+from tkinter.filedialog import askopenfile 
+import time
+
+def GUI():
+
+    ws = Tk()
+    ws.title('Bizzabo --> Hubspot')
+    ws.geometry('500x300') 
+
+    global inputFile
+    def open_file():
+        file_path = askopenfile(mode='r', filetypes=[('Excel Files', '*xlsx')])
+        if file_path is not None:
+            Label(ws, text='File Selected Successfully', foreground='black').grid(row=0, column=2)
+            pass
+        file_path = str(file_path)
+        file_path = file_path[25:len(file_path) - 28]
+        global inputFile 
+        inputFile = file_path
+
+    def uploadFiles():
+
+        file = inputFile
+        x = xlToContact(file)
+
+        pb1 = Progressbar(
+            ws, 
+            orient=HORIZONTAL, 
+            length=300, 
+            mode='determinate'
+            )
+        fileLocation = x.toExcel()
+        x.sortByCounty()
+        pb1.grid(row=4, columnspan=3, pady=20)
+        for _ in range(5):
+            ws.update_idletasks()
+            pb1['value'] += 20
+            time.sleep(0.2)
+        pb1.destroy()
+        Label(ws, text='Files Uploaded Successfully!', foreground='green').grid(row=4, columnspan=3, pady=10)
+        Label(ws, text='Files located in \n' + fileLocation, foreground='green').grid(row=5, columnspan=3, pady=10)
+        # os.system(fileLocation[0:len(fileLocation)-11])
             
-            
+    adhar = Label(
+        ws, 
+        text='Upload .xlsx file from Bizzabo: '
+        )
+    adhar.grid(row=0, column=0, padx=10)
+
+    adharbtn = Button(
+        ws, 
+        text ='Choose File', 
+        command = lambda:open_file()
+        ) 
+    adharbtn.grid(row=0, column=1)
+
+    upld = Button(
+        ws, 
+        text='Upload Files', 
+        command=uploadFiles
+        )
+    upld.grid(row=3, columnspan=3, pady=10)
+
+
+    ws.mainloop()
+    
+GUI()
